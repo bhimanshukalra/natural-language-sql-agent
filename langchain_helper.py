@@ -8,6 +8,7 @@ from langchain_experimental.sql import SQLDatabaseChain
 from langchain_classic.chains.sql_database.prompt import PROMPT_SUFFIX
 
 from few_shots import few_shots
+from prompts import MYSQL_PROMPT
 
 import os
 from dotenv import load_dotenv
@@ -41,22 +42,6 @@ def get_few_shot_db_chain():
         vectorstore=vectorstore,
         k=2,
     )
-    mysql_prompt = """You are a MySQL expert. Given an input question, first create a syntactically correct MySQL query to run, then look at the results of the query and return the answer to the input question.
-    Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per MySQL. You can order the results to return the most informative data in the database.
-    Never query for all columns from a table. You must query only the columns that are needed to answer the question. Wrap each column name in backticks (`) to denote them as delimited identifiers.
-    Pay attention to use only the column names you can see in the tables below. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
-    Pay attention to use CURDATE() function to get the current date, if the question involves "today".
-    
-    Use the following format:
-    
-    Question: Question here
-    SQLQuery: Query to run with no pre-amble
-    SQLResult: Result of the SQLQuery
-    Answer: Final answer here
-    
-    No pre-amble.
-    """
-
     example_prompt = PromptTemplate(
         input_variables=[
             "Question",
@@ -70,7 +55,7 @@ def get_few_shot_db_chain():
     few_shot_prompt = FewShotPromptTemplate(
         example_selector=example_selector,
         example_prompt=example_prompt,
-        prefix=mysql_prompt,
+        prefix=MYSQL_PROMPT,
         suffix=PROMPT_SUFFIX,
         input_variables=[
             "input",
