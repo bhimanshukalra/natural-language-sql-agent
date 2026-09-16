@@ -18,9 +18,9 @@ load_dotenv()
 
 def get_few_shot_db_chain():
     db_user = "root"
-    db_password = "root"
+    db_password = ""
     db_host = "localhost"
-    db_name = "atliq_tshirts"
+    db_name = "tshirts"
 
     db = SQLDatabase.from_uri(
         f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}",
@@ -67,3 +67,9 @@ def get_few_shot_db_chain():
     )
     chain = SQLDatabaseChain.from_llm(llm, db, verbose=True, prompt=few_shot_prompt)
     return chain
+
+
+if __name__ == "__main__":
+    chain = get_few_shot_db_chain()
+    response = chain.run("what is the total number of T-shirts available?")
+    print("response: ", response)
