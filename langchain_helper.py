@@ -99,5 +99,5 @@ def get_few_shot_db_chain():
 
 if __name__ == "__main__":
     chain = get_few_shot_db_chain()
-    response = chain.run("what is the total number of T-shirts available?")
-    print("response: ", response)
+    response = chain.invoke({"query": "what is the total number of T-shirts available?"})
+    print("response: ", response["result"])

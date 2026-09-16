@@ -7,7 +7,7 @@ question = st.text_input("Question: ")
 
 if question:
     chain = get_few_shot_db_chain()
-    response = chain.run(question)
+    response = chain.invoke({"query": question})
 
     st.header("Answer")
-    st.write(response)
+    st.write(response["result"])
