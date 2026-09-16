@@ -15,33 +15,61 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+CHROMA_PERSIST_DIR = "./chroma_store"
 
-def get_few_shot_db_chain():
+
+def get_db():
     db_user = "root"
     db_password = ""
     db_host = "localhost"
     db_name = "tshirts"
 
-    db = SQLDatabase.from_uri(
+    return SQLDatabase.from_uri(
         f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}",
         sample_rows_in_table_info=3,
     )
-    llm = GoogleGenerativeAI(
+
+
+def get_llm():
+    return GoogleGenerativeAI(
         api_key=os.getenv("GOOGLE_API_KEY"),
         model=os.getenv("GOOGLE_MODEL", "gemini-1.5-flash"),
         temperature=0.1,
     )
 
-    embeddings = HuggingFaceEmbeddings(
+
+def get_embeddings():
+    return HuggingFaceEmbeddings(
         model_name=os.getenv(
             "EMBEDDING_MODEL",
             "sentence-transformers/all-MiniLM-L6-v2",
         )
     )
+
+
+def get_vectorstore():
+    embeddings = get_embeddings()
+    if os.path.isdir(CHROMA_PERSIST_DIR):
+        return Chroma(
+            embedding_function=embeddings,
+            persist_directory=CHROMA_PERSIST_DIR,
+        )
+
     to_vectorize = [" ".join(example.values()) for example in few_shots]
-    vectorstore = Chroma.from_texts(to_vectorize, embeddings, metadatas=few_shots)
+    return Chroma.from_texts(
+        to_vectorize,
+        embeddings,
+        metadatas=few_shots,
+        persist_directory=CHROMA_PERSIST_DIR,
+    )
+
+
+def get_few_shot_db_chain():
+    db = get_db()
+    llm = get_llm()
+
     example_selector = SemanticSimilarityExampleSelector(
-        vectorstore=vectorstore,
+        vectorstore=get_vectorstore(),
         k=2,
     )
     example_prompt = PromptTemplate(

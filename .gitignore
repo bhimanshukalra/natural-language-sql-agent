@@ -11,3 +11,6 @@ wheels/
 
 # Local secrets
 .env
+
+# Persisted vectorstore cache
+chroma_store/
